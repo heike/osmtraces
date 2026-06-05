@@ -1,25 +1,14 @@
----
-output: github_document
----
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "man/figures/README-",
-  out.width = "100%"
-)
-```
 
 # osmtraces
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
-The goal of osmtraces is to help with downloading publicly available traces from
-OpenStreetMaps
+The goal of osmtraces is to help with downloading publicly available
+traces from OpenStreetMaps
 
 ## Installation
 
@@ -33,9 +22,7 @@ remotes::install_github("heike/osmtraces")
 
 This is a basic example which shows you how to solve a common problem:
 
-```{r example}
+``` r
 library(osmtraces)
 ## basic example code
 ```
-
-
