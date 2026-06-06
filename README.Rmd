@@ -56,34 +56,20 @@ By default up to 20 pages with 5000 track points are downloaded. Further traces 
 
 Pass the folder into the command to read all traces:
 ```{r}
-ames_tracks <- read_osm_traces("ames")
-```
-
-Tracks have names - some tracks are split across different files. 
-Unnesting and re-nesting brings these tracks together:
-
-```{r message = FALSE, warning = FALSE}
-library(dplyr)
-ames_trackpoints <- ames_tracks |>
-  tidyr::unnest(trkseg)
-summary(duplicated(ames_trackpoints))
-# delete duplicates:
-ames_trackpoints <- ames_trackpoints[-duplicated(ames_trackpoints),]
-
-ames_tracks <- ames_trackpoints |> 
-  group_by(name, desc, url) |> 
-  tidyr::nest()
+folder <- system.file("ames", package="osmtraces")
+ames_tracks <- read_osm_traces(folder)
 ```
 
 For each track, derive gps heading, speed and time between consecutive locations: 
 
-```{r}
+```{r message=FALSE, warning = FALSE}
+library(dplyr)
 ames_trackpoints <- ames_tracks |> 
   group_by(name, desc, url) |> 
   mutate(
   data = data |> purrr::map(.f = function(d) {
     d |> mutate(
-      time = ymd_hms(time),
+      time = lubridate::ymd_hms(time),
     ) |> arrange(time) |>
       mutate(
         segment = segmentize(time, seconds = 10)

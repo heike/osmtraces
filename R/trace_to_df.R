@@ -6,16 +6,17 @@
 #' This function is called as part of `read_gpx`. There should be no need to call
 #' this function by itself.
 #' @param trk xml node with elements and attributes
+#' @importFrom stats na.omit
 #' @importFrom xml2 xml_children xml_length xml_text xml_name
 #' @importFrom xml2 xml_attr xml_find_first
 #' @importFrom dplyr as_tibble tibble
 #' @importFrom purrr map list_rbind
-#' @importFrom stats na.omit
 #' @export
 #' @returns single row dataframe with a nested dataframe of the trace
 #' in form of a tibble with variables latitude, longitude, and time.
 trace_to_df <- function(trk) {
   # trk is an xml_node
+  trkseg <- NULL
 
   lst <- xml_children(trk)
   values <- as.list(
@@ -29,8 +30,8 @@ trace_to_df <- function(trk) {
 
   segments <- xml_find_all(trk, ".//d1:trkseg")
 
-  trkseg = map(segments, function(trkseg) {
-    pts <- xml_find_all(trkseg, ".//d1:trkpt")
+  trkseg = map(segments, function(segment) {
+    pts <- xml_find_all(segment, ".//d1:trkpt")
     tibble(
       lat = as.numeric(xml_attr(pts, "lat")),
       lon = as.numeric(xml_attr(pts, "lon")),

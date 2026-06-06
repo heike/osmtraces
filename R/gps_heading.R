@@ -9,6 +9,7 @@
 #' @param type character value describing the type of angle value -
 #'        either "degree" (default) or "radians"
 #' @returns a vector of gps heading in the same type as the input.
+#' @export
 gps_heading <- function(lon, lat, type = "degree") {
   n <- length(lon)
   stopifnot(length(lat) == length(lon))

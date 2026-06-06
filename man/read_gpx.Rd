@@ -19,8 +19,10 @@ to read the downloaded trace files.
 }
 \examples{
 # example code
+if (interactive()) {
 library(ggplot2)
-read_gpx(file.path(system.file(package = "osmtraces"),"ames/page-0.gpx")) |>
+read_gpx(system.file("ames/page-0.gpx", package = "osmtraces")) |>
   tidyr::unnest(trkseg) |>
   ggplot(aes(x = lon, y = lat)) + geom_point()
+}
 }

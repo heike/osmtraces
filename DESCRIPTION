@@ -1,11 +1,11 @@
 Package: osmtraces
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Download OSM Traces
 Version: 0.1.0
 Authors@R: c(
     person(
-      "Jane", "Doe",
-      email = "jane@example.com",
+      "Heike", "Hofmann",
+      email = "heike.hofmann@gmail.com",
       role = c("aut", "cre")
     )
   )
