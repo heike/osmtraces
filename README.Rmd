@@ -33,9 +33,10 @@ remotes::install_github("heike/osmtraces")
 
 This is a basic example which shows you how to solve a common problem:
 
-```{r example}
+```{r example, message=FALSE, warning = FALSE}
 library(osmtraces)
 ## basic example code
+library(dplyr)
 ```
 
 OSM Traces are made publicly available GPX files. Foremost, these traces help with making adjustments to OSM when roads are in slightly different locations than indicated on the map. 
@@ -55,17 +56,21 @@ By default up to 20 pages with 5000 track points are downloaded. Further traces 
 
 
 Pass the folder into the command to read all traces:
-```{r}
+```{r eval=FALSE}
 folder <- system.file("ames", package="osmtraces")
 ames_tracks <- read_osm_traces(folder)
 ```
 
+```{r}
+data(ames_tracks)
+```
+
 For each track, derive gps heading, speed and time between consecutive locations: 
 
-```{r message=FALSE, warning = FALSE}
+```{r eval=FALSE, message=FALSE, warning = FALSE}
 library(dplyr)
-ames_trackpoints <- ames_tracks |> 
-  group_by(name, desc, url) |> 
+ames_tracks <- ames_tracks |> 
+  group_by(name) |> 
   mutate(
   data = data |> purrr::map(.f = function(d) {
     d |> mutate(
@@ -81,11 +86,6 @@ ames_tracks <- ames_trackpoints |>
   group_by(name, desc, url, segment) |>
   tidyr::nest()
 
-# identify length of traces, remove all singletons
-ames_tracks <- ames_tracks |> mutate(track_length = data |> purrr::map_int(.f = nrow))
-
-ames_tracks <- ames_tracks |> filter(track_length > 1)
-
 ames_tracks <- ames_tracks |> mutate(
   data = data |> purrr::map(.f = function(d) {
     d |> arrange(time) |>
@@ -96,14 +96,16 @@ ames_tracks <- ames_tracks |> mutate(
       )
   })
 )
+```
 
+```{r}
+library(ggplot2)
 ames_trackpoints <- ames_tracks |> 
   ungroup() |>
-  mutate(rowid = 1:n()) |> 
   tidyr::unnest(data)
 
 ames_trackpoints |> ggplot(aes(x = lon, y = lat, colour = gps_heading)) +
-  geom_path(aes(group=rowid), alpha = 0.7, linewidth=1) +
+  geom_path(aes(group=name), alpha = 0.7, linewidth=1) +
   scale_colour_gradientn(
     colours = grDevices::hcl(
       h = seq(0, 360, length.out = 361),
@@ -115,7 +117,7 @@ ames_trackpoints |> ggplot(aes(x = lon, y = lat, colour = gps_heading)) +
   ) + ggthemes::theme_map()
 
 ames_trackpoints |> ggplot(aes(x = lon, y = lat, colour = gps_speed)) +
-  geom_path(aes(group=rowid)) 
+  geom_path(aes(group=name)) 
 
 
 ```
