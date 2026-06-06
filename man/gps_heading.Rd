@@ -4,8 +4,22 @@
 \alias{gps_heading}
 \title{Derive heading based on consecutive geographic locations}
 \usage{
-gps_heading(lon, lat, degree = TRUE)
+gps_heading(lon, lat, type = "degree")
+}
+\arguments{
+\item{lon}{vector of geographic longitudes}
+
+\item{lat}{vector of geographic latitudes}
+
+\item{type}{character value describing the type of angle value -
+either "degree" (default) or "radians"}
+}
+\value{
+a vector of gps heading in the same type as the input.
 }
 \description{
-Derive heading based on consecutive geographic locations
+The heading of a device with a gps unit can be determined by
+calculating the angle between the last gps location and the
+current location.
+It is assumed that lon and lat are sorted temporally.
 }

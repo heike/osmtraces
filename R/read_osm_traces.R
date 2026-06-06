@@ -1,6 +1,18 @@
+#' Read pre-downloaded traces from a folder
+#'
+#' @param folder character vector of the file path at which the gpx files are located
+#' @returns data frame with one row for each trace; other variables usually include
+#' the file name, a description, and a url. Traces are included as a list variable
+#' of data frames. Each trace is a sequence of time stamped geographic locations.
 #' @export
 #' @examples
 #' # example code
+#' library(ggplot2)
+#' folder <- file.path(system.file(package = "osmtraces"),"ames")
+#' ames <- read_osm_traces(folder)
+#' ames$trkseg[[1]] |> ggplot(aes(x = lon, y = lat)) + geom_point()
+#'
+#' if (interactive()) {
 #' download_osm_tracks(lon = -96.707931, lat = 40.811909, zoom = 16,
 #'  folder="lincoln")
 #' lincoln_tracks <- read_osm_traces("lincoln")
@@ -27,6 +39,7 @@
 #'     limits = c(0, 360),
 #'     breaks = seq(0, 360, by = 45)
 #'   )
+#' }
 read_osm_traces <- function (folder) {
   files <- dir(path=folder, pattern=".gpx", full.names = TRUE)
   tracks <- NULL

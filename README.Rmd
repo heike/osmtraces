@@ -38,4 +38,98 @@ library(osmtraces)
 ## basic example code
 ```
 
+OSM Traces are made publicly available GPX files. Foremost, these traces help with making adjustments to OSM when roads are in slightly different locations than indicated on the map. 
 
+The link below show a highway intersection of I-30 and I-35 close to Ames IA: 
+
+https://www.openstreetmap.org/#map=16/42.00739/-93.57140&layers=PG
+
+Based on this link, we can download all traces from the geographic latitude and longitude, using the zoom as a way to define the size of the bounding box:
+
+```{r eval = FALSE}
+# download traces into a predefined folder:
+download_osm_tracks(lon = -93.57140, lat =42.00739, zoom = 15,
+ folder="ames")
+```
+By default up to 20 pages with 5000 track points are downloaded. Further traces can be downloaded by re-running the command with an increased setting of `first_page`.
+
+
+Pass the folder into the command to read all traces:
+```{r}
+ames_tracks <- read_osm_traces("ames")
+```
+
+Tracks have names - some tracks are split across different files. 
+Unnesting and re-nesting brings these tracks together:
+
+```{r message = FALSE, warning = FALSE}
+library(dplyr)
+ames_trackpoints <- ames_tracks |>
+  tidyr::unnest(trkseg)
+summary(duplicated(ames_trackpoints))
+# delete duplicates:
+ames_trackpoints <- ames_trackpoints[-duplicated(ames_trackpoints),]
+
+ames_tracks <- ames_trackpoints |> 
+  group_by(name, desc, url) |> 
+  tidyr::nest()
+```
+
+For each track, derive gps heading, speed and time between consecutive locations: 
+
+```{r}
+ames_trackpoints <- ames_tracks |> 
+  group_by(name, desc, url) |> 
+  mutate(
+  data = data |> purrr::map(.f = function(d) {
+    d |> mutate(
+      time = ymd_hms(time),
+    ) |> arrange(time) |>
+      mutate(
+        segment = segmentize(time, seconds = 10)
+    ) 
+  })) |> tidyr::unnest(data)
+
+# now split by segment    
+ames_tracks <- ames_trackpoints |> 
+  group_by(name, desc, url, segment) |>
+  tidyr::nest()
+
+# identify length of traces, remove all singletons
+ames_tracks <- ames_tracks |> mutate(track_length = data |> purrr::map_int(.f = nrow))
+
+ames_tracks <- ames_tracks |> filter(track_length > 1)
+
+ames_tracks <- ames_tracks |> mutate(
+  data = data |> purrr::map(.f = function(d) {
+    d |> arrange(time) |>
+      mutate(
+        gps_heading = gps_heading(lon = lon, lat = lat),
+        gps_speed = gps_speed_mph(lon = lon, lat = lat, time = time),
+        dtime = c(diff(as.numeric(time)), NA)
+      )
+  })
+)
+
+ames_trackpoints <- ames_tracks |> 
+  ungroup() |>
+  mutate(rowid = 1:n()) |> 
+  tidyr::unnest(data)
+
+ames_trackpoints |> ggplot(aes(x = lon, y = lat, colour = gps_heading)) +
+  geom_path(aes(group=rowid), alpha = 0.7, linewidth=1) +
+  scale_colour_gradientn(
+    colours = grDevices::hcl(
+      h = seq(0, 360, length.out = 361),
+      c = 100,
+      l = 65
+    ),
+    limits = c(0, 360),
+    breaks = seq(0, 360, by = 45)
+  ) + ggthemes::theme_map()
+
+ames_trackpoints |> ggplot(aes(x = lon, y = lat, colour = gps_speed)) +
+  geom_path(aes(group=rowid)) 
+
+
+```

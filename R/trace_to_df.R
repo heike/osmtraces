@@ -10,6 +10,7 @@
 #' @importFrom xml2 xml_attr xml_find_first
 #' @importFrom dplyr as_tibble tibble
 #' @importFrom purrr map list_rbind
+#' @importFrom stats na.omit
 #' @export
 #' @returns single row dataframe with a nested dataframe of the trace
 #' in form of a tibble with variables latitude, longitude, and time.

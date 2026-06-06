@@ -78,5 +78,6 @@ download_osm_tracks <- function(
       writeLines(xml, con=sprintf(file.path(folder, sprintf("page-%d.gpx", page))))
     }
   }
+  message("Download not complete. Add <first_page = %d> to your command for the next set of traces.", first_page + 20)
   return(folder)
 }
